@@ -1,0 +1,32 @@
+{
+  "cam1": {
+    "name": "BOP Camera 1 - Main Gate",
+    "source": "sample1.mp4",
+    "zone_config": "zone_cam1.json"
+  },
+  "cam2": {
+    "name": "BOP Camera 2 - East Fence",
+    "source": "sample2.mp4",
+    "zone_config": "zone_cam2.json"
+  },
+  "cam3": {
+    "name": "BOP Camera 3 - Access Road",
+    "source": "sample3.mp4",
+    "zone_config": "zone_cam3.json"
+  },
+  "cam4": {
+    "name": "BOP Camera 4 - Perimeter",
+    "source": "sample4.mp4",
+    "zone_config": "zone_cam4.json"
+  },
+  "cam5": {
+    "name": "BOP Camera 5 - North Watchtower",
+    "source": "sample5.mp4",
+    "zone_config": "zone_cam5.json"
+  },
+  "cam6": {
+    "name": "BOP Camera 6 - River Crossing",
+    "source": "sample6.mp4",
+    "zone_config": "zone_cam6.json"
+  }
+}

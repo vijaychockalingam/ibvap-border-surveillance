@@ -1,0 +1,5 @@
+ultralytics>=8.2,<9
+opencv-python==4.11.0.86
+flask>=3.0,<4
+numpy==1.26.4
+easyocr>=1.7,<2

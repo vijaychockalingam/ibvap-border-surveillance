@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database and runtime outputs
+ibvap.db
+ibvap.db-wal
+ibvap.db-shm
+snapshots/
+*.log
+
+# PyTorch weights
+*.pt
+
+# Video files
+*.mp4
+*.avi
+*.mkv
+*.mov
+
+# IDE
+
+.vscode/
+.idea/
