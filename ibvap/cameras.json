@@ -2,31 +2,49 @@
   "cam1": {
     "name": "BOP Camera 1 - Main Gate",
     "source": "sample1.mp4",
-    "zone_config": "zone_cam1.json"
+    "location": "Sector 1 - Main Gate Entrance",
+    "zone_config": "zone_cam1.json",
+    "enabled": true,
+    "processing_node": "node_1"
   },
   "cam2": {
     "name": "BOP Camera 2 - East Fence",
     "source": "sample2.mp4",
-    "zone_config": "zone_cam2.json"
+    "location": "Sector 1 - East Perimeter Boundary",
+    "zone_config": "zone_cam2.json",
+    "enabled": true,
+    "processing_node": "node_1"
   },
   "cam3": {
     "name": "BOP Camera 3 - Access Road",
     "source": "sample3.mp4",
-    "zone_config": "zone_cam3.json"
+    "location": "Sector 2 - Checkpoint Access Road",
+    "zone_config": "zone_cam3.json",
+    "enabled": true,
+    "processing_node": "node_1"
   },
   "cam4": {
     "name": "BOP Camera 4 - Perimeter",
     "source": "sample4.mp4",
-    "zone_config": "zone_cam4.json"
+    "location": "Sector 3 - West Perimeter Fence",
+    "zone_config": "zone_cam4.json",
+    "enabled": true,
+    "processing_node": "node_2"
   },
   "cam5": {
     "name": "BOP Camera 5 - North Watchtower",
     "source": "sample5.mp4",
-    "zone_config": "zone_cam5.json"
+    "location": "Sector 4 - North Watchtower Vista",
+    "zone_config": "zone_cam5.json",
+    "enabled": true,
+    "processing_node": "node_2"
   },
   "cam6": {
     "name": "BOP Camera 6 - River Crossing",
     "source": "sample6.mp4",
-    "zone_config": "zone_cam6.json"
+    "location": "Sector 5 - River Basin Crossing",
+    "zone_config": "zone_cam6.json",
+    "enabled": true,
+    "processing_node": "node_2"
   }
 }

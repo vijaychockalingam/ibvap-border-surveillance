@@ -70,7 +70,7 @@
     padding: 12px 16px;
   }
   .stat .value { font-family: var(--font-data); font-size: 24px; font-weight: 600; line-height: 1; }
-  .stat .label { color: var(--text-dim); font-size: 11.5px; margin-top: 6px; }
+  .stat .label { color: var(--text-dim); font-size: 11.5px; margin-top: 6px; text-transform: uppercase; }
   .stat.alerts .value { color: var(--red); }
 
   /* ---------- alarm bar ---------- */
@@ -85,13 +85,36 @@
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
 
   /* ---------- main layout ---------- */
-  .main { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
+  .main { display: grid; grid-template-columns: 1fr 380px; gap: 16px; align-items: start; }
   @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+
+  .nodes-container { display: flex; flex-direction: column; gap: 24px; }
+  
+  .node-section {
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    padding: 16px;
+  }
+  
+  .node-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border-soft); padding-bottom: 8px;}
+  .node-header h3 { font-size: 16px; margin: 0; color: var(--text); }
+  .node-desc { font-size: 12px; color: var(--text-dim); }
+  
+  .node-status-badge {
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .node-status-badge.online { background: rgba(52, 211, 153, 0.2); color: #A7F3D0; }
+  .node-status-badge.offline { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; }
 
   .cam-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 10px;
+    gap: 12px;
   }
 
   .cam-tile {
@@ -115,19 +138,27 @@
   .cam-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); flex-shrink: 0; }
   .cam-status-dot.online { background: var(--ok); }
   .cam-name { color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cam-id { color: var(--text-faint); }
+  .cam-badge { color: var(--text-faint); font-size: 10px; background: var(--border); padding: 1px 4px; border-radius: 2px; }
+
+  .health-warning {
+    color: #F5A623; background: rgba(245, 166, 35, 0.2);
+    font-size: 9px; padding: 1px 4px; border-radius: 2px; font-weight: bold; margin-left: auto;
+  }
 
   .cam-video-wrap { aspect-ratio: 4 / 3; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
-  .cam-video-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .cam-offline { color: var(--text-faint); font-family: var(--font-data); font-size: 12.5px; text-align: center; padding: 20px; }
+  .cam-video-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; opacity: 0; transition: opacity 0.3s; }
+  .cam-video-wrap img.loaded { opacity: 1; }
+  
+  .cam-offline { color: var(--text-faint); font-family: var(--font-data); font-size: 12.5px; text-align: center; padding: 20px; position: absolute; }
   .cam-stopped-overlay {
     display: none; position: absolute; inset: 0; align-items: center; justify-content: center;
     background: rgba(10,13,16,0.7); color: var(--amber); font-family: var(--font-data);
     font-size: 12.5px; text-align: center; padding: 12px;
   }
   .cam-tile.stopped .cam-stopped-overlay { display: flex; }
+  .cam-tile.stopped img { opacity: 0.3; }
 
-  /* ---------- alert feed & summaries ---------- */
+  /* ---------- Incident feed ---------- */
   .side-panel { background: var(--panel); border: 1px solid var(--border-soft); border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; }
   .side-panel-header {
     padding: 12px 14px 8px; border-bottom: 1px solid var(--border-soft);
@@ -135,63 +166,66 @@
   }
   .side-panel-title { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.3px; display: flex; align-items: center; gap: 6px; }
   
-  .filter-tabs { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border-soft); background: var(--panel-raised); }
-  .filter-btn {
-    background: transparent; border: 1px solid transparent; color: var(--text-dim);
-    padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; font-family: var(--font-ui);
-    transition: all 0.15s ease;
-  }
-  .filter-btn:hover { color: var(--text); background: var(--panel); }
-  .filter-btn.active { background: var(--border); color: var(--text); border-color: var(--text-faint); font-weight: 500; }
-
-  .alert-feed { max-height: 600px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .alert-feed { max-height: 800px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
   
-  .alert-item {
-    border-left: 3px solid var(--ok); background: var(--panel-raised);
+  .incident-item {
+    background: var(--panel-raised);
     padding: 10px 12px; border-radius: 3px; font-size: 12.5px;
-    border: 1px solid var(--border-soft); border-left-width: 3px;
+    border: 1px solid var(--border-soft); border-left: 3px solid var(--border);
     transition: transform 0.1s, border-color 0.15s;
+    cursor: pointer;
   }
-  .alert-item:hover { border-color: var(--border); transform: translateX(2px); }
-  .alert-item.critical { border-left-color: var(--critical); background: #1B0F11; border-color: #3B151A; }
-  .alert-item.high { border-left-color: var(--red); background: #191214; }
-  .alert-item.medium { border-left-color: var(--amber); }
-  .alert-item.low { border-left-color: var(--ok); }
+  .incident-item:hover { border-color: var(--border); transform: translateX(2px); }
+  .incident-item.critical { border-left-color: var(--critical); background: #1B0F11; border-color: #3B151A; }
+  .incident-item.high { border-left-color: var(--red); background: #191214; }
+  .incident-item.medium { border-left-color: var(--amber); }
+  .incident-item.low { border-left-color: var(--ok); }
   
-  .alert-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-  .alert-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
-    padding: 2px 6px; border-radius: 2px;
-  }
-  .badge-intrusion { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; }
-  .badge-loitering { background: rgba(245, 166, 35, 0.2); color: #FCD34D; }
-  .badge-watchlist { background: rgba(220, 38, 38, 0.3); color: #FFA8A8; font-weight: 700; animation: tile-pulse 1s infinite; }
-  .badge-night { background: rgba(139, 92, 246, 0.2); color: #C4B5FD; }
-  .badge-vehicle { background: rgba(59, 130, 246, 0.2); color: #93C5FD; }
-  .badge-person { background: rgba(52, 211, 153, 0.2); color: #A7F3D0; }
-  .badge-face { background: rgba(236, 72, 153, 0.2); color: #FBCFE8; }
-
-  .alert-time { color: var(--text-faint); font-family: var(--font-data); font-size: 11px; white-space: nowrap; }
+  .incident-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .incident-id { font-family: var(--font-data); font-size: 11px; font-weight: bold; color: var(--text-dim); }
   
-  .alert-summary {
-    color: var(--text); font-size: 12.5px; line-height: 1.35; margin: 4px 0 6px;
-    font-weight: 450;
-  }
+  .incident-desc { color: var(--text); font-size: 12.5px; line-height: 1.35; margin: 4px 0; font-weight: 450; }
   
-  .alert-meta {
-    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  .incident-reasons { margin-top: 6px; font-size: 11px; color: var(--text-dim); display: flex; flex-direction: column; gap: 2px;}
+  .incident-reasons div::before { content: "• "; }
+  
+  .incident-meta {
+    display: flex; align-items: center; justify-content: space-between;
     color: var(--text-dim); font-family: var(--font-data); font-size: 10.5px;
-    padding-top: 4px; border-top: 1px dashed var(--border-soft);
+    padding-top: 6px; margin-top: 6px; border-top: 1px dashed var(--border-soft);
   }
-  .alert-meta span { display: inline-flex; align-items: center; gap: 3px; }
-  .alert-meta .sev-tag { font-weight: 600; }
-  .alert-meta .sev-tag.CRITICAL { color: var(--critical); }
-  .alert-meta .sev-tag.HIGH { color: var(--red); }
-  .alert-meta .sev-tag.MEDIUM { color: var(--amber); }
-  .alert-meta .sev-tag.LOW { color: var(--ok); }
+  .sev-tag { font-weight: 600; padding: 1px 4px; border-radius: 2px; background: rgba(255,255,255,0.1); }
+  .sev-tag.CRITICAL { color: var(--critical); background: rgba(220,38,38,0.2); }
+  .sev-tag.HIGH { color: var(--red); background: rgba(239,68,68,0.2); }
+  .sev-tag.MEDIUM { color: var(--amber); background: rgba(245,166,35,0.2); }
   
   .alert-empty { color: var(--text-faint); font-size: 12px; text-align: center; padding: 24px 8px; }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+    width: 600px; max-width: 90vw; max-height: 90vh; overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .modal-header { padding: 16px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h2 { margin: 0; font-size: 16px; }
+  .modal-close { background: none; border: none; color: var(--text); cursor: pointer; font-size: 18px; }
+  .modal-body { padding: 16px; }
+  .timeline { margin-top: 16px; padding-left: 12px; border-left: 2px solid var(--border-soft); }
+  .timeline-event { position: relative; margin-bottom: 12px; }
+  .timeline-event::before {
+    content: ""; position: absolute; left: -17px; top: 4px; width: 8px; height: 8px;
+    background: var(--text-faint); border-radius: 50%;
+  }
+  .timeline-time { font-family: var(--font-data); font-size: 11px; color: var(--text-dim); }
+  .timeline-desc { font-size: 13px; margin-top: 2px; }
+  .modal-actions { padding: 16px; border-top: 1px solid var(--border-soft); text-align: right; }
+  .btn-close-incident { background: var(--ok); color: #000; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -199,11 +233,11 @@
   <div class="topbar">
     <div class="brand">
       <h1>IBVAP</h1>
-      <span class="sub">Intelligent Border Video Analytics Platform</span>
+      <span class="sub">Multi-Node Intelligent Border Video Analytics Platform</span>
     </div>
     <div class="topbar-right">
       <div class="system-chip" id="system-chip">
-        <span class="dot"></span><span id="system-chip-text">Checking cameras&hellip;</span>
+        <span class="dot"></span><span id="system-chip-text">Checking system&hellip;</span>
       </div>
       <button class="mute-btn" id="mute-btn" onclick="toggleMute()">Sound: On</button>
     </div>
@@ -214,27 +248,38 @@
   </div>
 
   <div class="stats">
-    <div class="stat"><div class="value" id="stat-persons">0</div><div class="label">PERSON EVENTS</div></div>
-    <div class="stat"><div class="value" id="stat-vehicles">0</div><div class="label">VEHICLE EVENTS</div></div>
+    <div class="stat"><div class="value" id="stat-incidents">0</div><div class="label">ACTIVE INCIDENTS</div></div>
+    <div class="stat"><div class="value" id="stat-persons">0</div><div class="label">PERSON DETECTIONS</div></div>
     <div class="stat alerts"><div class="value" id="stat-alerts">0</div><div class="label">HIGH / CRITICAL ALERTS</div></div>
   </div>
 
   <div class="main">
-    <div class="cam-grid" id="cam-grid">
-      {% for cam_id, cam in cameras.items() %}
-      <div class="cam-tile" id="tile-{{ cam_id }}" data-cam-id="{{ cam_id }}">
-        <div class="cam-tile-header">
-          <span class="cam-status-dot {{ 'online' if online.get(cam_id) else '' }}"></span>
-          <span class="cam-name">{{ cam.name }}</span>
-          <span class="cam-id">{{ cam_id }}</span>
+    <div class="nodes-container">
+      {% for node_id, node_config in nodes.items() %}
+      <div class="node-section" id="node-section-{{ node_id }}">
+        <div class="node-header">
+          <h3>{{ node_config.name }}</h3>
+          <span class="node-status-badge" id="node-badge-{{ node_id }}">CONNECTING</span>
+          <span class="node-desc">{{ node_config.description }}</span>
         </div>
-        <div class="cam-video-wrap">
-          {% if online.get(cam_id) %}
-          <img id="cam-img-{{ cam_id }}" src="/snapshot/{{ cam_id }}" alt="{{ cam.name }}">
-          <div class="cam-stopped-overlay">FEED STOPPED<br>check terminal log for cause</div>
-          {% else %}
-          <div class="cam-offline">OFFLINE<br>check "source" in cameras.json</div>
-          {% endif %}
+        <div class="cam-grid" id="cam-grid-{{ node_id }}">
+          {% for cam_id, cam in cameras.items() %}
+            {% if cam.processing_node == node_id and cam.enabled != false %}
+            <div class="cam-tile stopped" id="tile-{{ cam_id }}" data-cam-id="{{ cam_id }}">
+              <div class="cam-tile-header">
+                <span class="cam-status-dot"></span>
+                <span class="cam-name">{{ cam.name }}</span>
+                <span class="cam-badge">{{ cam.location }}</span>
+                <div id="hw-{{ cam_id }}" style="display:flex; gap: 4px; margin-left:auto;"></div>
+              </div>
+              <div class="cam-video-wrap">
+                <img id="cam-img-{{ cam_id }}" alt="{{ cam.name }}">
+                <div class="cam-offline" id="cam-offline-{{ cam_id }}">CONNECTING...</div>
+                <div class="cam-stopped-overlay">STREAM FAILED<br>reconnecting...</div>
+              </div>
+            </div>
+            {% endif %}
+          {% endfor %}
         </div>
       </div>
       {% endfor %}
@@ -242,17 +287,30 @@
 
     <div class="side-panel">
       <div class="side-panel-header">
-        <span class="side-panel-title">🛡️ SURVEILLANCE EVENT FEED</span>
+        <span class="side-panel-title">🔥 ACTIVE INCIDENTS</span>
       </div>
-      <div class="filter-tabs">
-        <button class="filter-btn active" onclick="setFilter('ALL', this)">All Incidents</button>
-        <button class="filter-btn" onclick="setFilter('INTRUSION', this)">🚨 Intrusions</button>
-        <button class="filter-btn" onclick="setFilter('LOITERING', this)">⏳ Loitering</button>
-        <button class="filter-btn" onclick="setFilter('WATCHLIST', this)">🎯 Watchlist</button>
-        <button class="filter-btn" onclick="setFilter('NIGHT', this)">🌙 Night Mode</button>
+      <div class="alert-feed" id="incidents-list">
+        <div class="alert-empty">Loading intelligence layer...</div>
       </div>
-      <div class="alert-feed" id="alerts-list">
-        <div class="alert-empty">Waiting for events&hellip;</div>
+    </div>
+  </div>
+
+  <!-- Incident Detail Modal -->
+  <div class="modal-overlay" id="incident-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Incident Details</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-desc" style="font-weight: 500; font-size: 14px; margin-bottom: 12px;"></div>
+        <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 8px;">Context & Reasoning:</div>
+        <div id="modal-reasons" class="incident-reasons" style="background: var(--panel-raised); padding: 8px; border-radius: 4px; margin-bottom: 16px;"></div>
+        <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 8px;">Activity Timeline:</div>
+        <div id="modal-timeline" class="timeline"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-close-incident" id="btn-resolve" onclick="resolveCurrentIncident()">Resolve Incident</button>
       </div>
     </div>
   </div>
@@ -260,10 +318,10 @@
 <script>
 let audioCtx = null;
 let muted = false;
-let lastSeenEventId = null;
+let lastSeenIncidentId = null;
 let alarmActiveUntil = 0;
-let currentFilter = 'ALL';
-let allEventsCache = [];
+let activeFeeds = new Set();
+let currentIncidentId = null;
 
 function toggleMute() {
   muted = !muted;
@@ -295,91 +353,82 @@ function playAlarmBeep(severity) {
   } catch (e) { console.warn('alarm audio failed', e); }
 }
 
-function triggerAlarm(severity) {
+function triggerAlarm(severity, text) {
   playAlarmBeep(severity);
   document.body.classList.remove('flash-alarm');
   void document.body.offsetWidth;
   document.body.classList.add('flash-alarm');
   alarmActiveUntil = Date.now() + 4000;
-  updateAlarmBar(severity);
+  updateAlarmBar(severity, text);
 }
 
-function updateAlarmBar(latestSeverity) {
+function updateAlarmBar(latestSeverity, text) {
   const bar = document.getElementById('alarm-bar');
-  const text = document.getElementById('alarm-text');
+  const txtObj = document.getElementById('alarm-text');
   const active = Date.now() < alarmActiveUntil;
   bar.classList.toggle('active', active);
-  text.textContent = active
-    ? (latestSeverity === 'CRITICAL' ? 'CRITICAL - Watchlist match detected' : 'ALERT - Intrusion / restricted zone triggered')
-    : 'No active alerts';
+  if (active && text) txtObj.textContent = text;
+  else if (!active) txtObj.textContent = 'No active alerts';
 }
 setInterval(() => updateAlarmBar(), 1000);
-
-function setFilter(filterType, btnElem) {
-  currentFilter = filterType;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  if (btnElem) btnElem.classList.add('active');
-  renderEvents();
-}
-
-function getBadgeInfo(eventType) {
-  switch (eventType) {
-    case 'INTRUSION': return { icon: '🚨', label: 'ZONE INTRUSION', cls: 'badge-intrusion', sevClass: 'high' };
-    case 'LOITERING': return { icon: '⏳', label: 'LOITERING', cls: 'badge-loitering', sevClass: 'high' };
-    case 'WATCHLIST_MATCH': return { icon: '🎯', label: 'WATCHLIST MATCH', cls: 'badge-watchlist', sevClass: 'critical' };
-    case 'NIGHT_MOVEMENT': return { icon: '🌙', label: 'NIGHT MOVEMENT', cls: 'badge-night', sevClass: 'medium' };
-    case 'VEHICLE_DETECTED': return { icon: '🚗', label: 'VEHICLE', cls: 'badge-vehicle', sevClass: 'low' };
-    case 'PERSON_DETECTED': return { icon: '🚶', label: 'PEDESTRIAN', cls: 'badge-person', sevClass: 'low' };
-    case 'FACE_DETECTED': return { icon: '👤', label: 'FACE IDENTIFIED', cls: 'badge-face', sevClass: 'low' };
-    default: return { icon: '📌', label: eventType, cls: 'badge-vehicle', sevClass: 'low' };
-  }
-}
 
 function formatRelativeTime(isoTime) {
   if (!isoTime) return '';
   try {
     const d = new Date(isoTime);
     return d.toLocaleTimeString([], { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  } catch (e) {
-    return isoTime;
-  }
+  } catch (e) { return isoTime; }
 }
 
 function startCameraFeed(camId) {
+  if (activeFeeds.has(camId)) return;
   const img = document.getElementById('cam-img-' + camId);
   if (!img) return;
+  activeFeeds.add(camId);
+  
   let isFetching = false;
-
   function getNextFrame() {
-    if (isFetching) return;
+    if (isFetching || !activeFeeds.has(camId)) return;
     isFetching = true;
     const nextImg = new Image();
     nextImg.onload = () => {
       img.src = nextImg.src;
+      img.classList.add('loaded');
       isFetching = false;
       setTimeout(getNextFrame, 65); // ~15 FPS
     };
     nextImg.onerror = () => {
       isFetching = false;
-      setTimeout(getNextFrame, 250);
+      setTimeout(getNextFrame, 1000); // Retry later if failed
     };
     nextImg.src = '/snapshot/' + camId + '?t=' + Date.now();
   }
   getNextFrame();
 }
 
-// Start feeds for all active cameras
-{% for cam_id, cam in cameras.items() %}
-  {% if online.get(cam_id) %}
-    startCameraFeed('{{ cam_id }}');
-  {% endif %}
-{% endfor %}
+function stopCameraFeed(camId) {
+    activeFeeds.delete(camId);
+    const img = document.getElementById('cam-img-' + camId);
+    if (img) img.classList.remove('loaded');
+}
 
-async function refreshCameraStatus() {
+async function refreshSystemStatus() {
   try {
-    const res = await fetch('/api/cameras');
-    if (!res.ok) return;
-    const cams = await res.json();
+    const healthRes = await fetch('/api/health');
+    if (healthRes.ok) {
+        const healthData = await healthRes.json();
+        for (const [nodeId, isOnline] of Object.entries(healthData.nodes || {})) {
+            const badge = document.getElementById('node-badge-' + nodeId);
+            if (badge) {
+                badge.textContent = isOnline ? 'ONLINE' : 'OFFLINE';
+                badge.className = 'node-status-badge ' + (isOnline ? 'online' : 'offline');
+            }
+        }
+    }
+    
+    const camsRes = await fetch('/api/cameras');
+    if (!camsRes.ok) return;
+    const cams = await camsRes.json();
     let onlineCount = 0, total = 0;
     const now = Date.now() / 1000;
 
@@ -389,12 +438,35 @@ async function refreshCameraStatus() {
 
       const tile = document.getElementById('tile-' + camId);
       if (!tile) continue;
+      
+      const offlineText = document.getElementById('cam-offline-' + camId);
+      if (offlineText) offlineText.style.display = 'none';
 
       const dot = tile.querySelector('.cam-status-dot');
       if (dot) dot.classList.toggle('online', !!info.online);
+      
+      // Health warnings
+      const hwContainer = document.getElementById('hw-' + camId);
+      if (hwContainer) {
+          hwContainer.innerHTML = '';
+          (info.health_warnings || []).forEach(w => {
+              const span = document.createElement('span');
+              span.className = 'health-warning';
+              span.textContent = w;
+              hwContainer.appendChild(span);
+          });
+      }
 
-      if (tile.querySelector('img')) {
-        tile.classList.toggle('stopped', !info.online);
+      if (info.online) {
+          tile.classList.remove('stopped');
+          startCameraFeed(camId);
+      } else {
+          tile.classList.add('stopped');
+          stopCameraFeed(camId);
+          if (offlineText) {
+             offlineText.style.display = 'block';
+             offlineText.textContent = info.status === 'ERROR' ? 'ERROR' : (info.status || 'OFFLINE');
+          }
       }
 
       tile.classList.remove('alert-high', 'alert-critical');
@@ -415,7 +487,7 @@ async function refreshCameraStatus() {
       chipText.textContent = onlineCount + '/' + total + ' cameras online';
     }
   } catch (e) {
-    console.warn('camera status refresh failed', e);
+    console.warn('system status refresh failed', e);
   }
 }
 
@@ -425,88 +497,93 @@ async function refreshStats() {
     if (!res.ok) return;
     const stats = await res.json();
     if (stats.persons !== undefined) document.getElementById('stat-persons').innerText = stats.persons;
-    if (stats.vehicles !== undefined) document.getElementById('stat-vehicles').innerText = stats.vehicles;
     if (stats.alerts !== undefined) document.getElementById('stat-alerts').innerText = stats.alerts;
-  } catch (e) {
-    console.warn('stats refresh failed', e);
-  }
+  } catch (e) { console.warn(e); }
 }
 
-function renderEvents() {
-  const list = document.getElementById('alerts-list');
-  if (!allEventsCache || allEventsCache.length === 0) {
-    list.innerHTML = '<div class="alert-empty">No security alerts logged yet. Monitoring all active zones...</div>';
-    return;
-  }
-
-  let filtered = allEventsCache;
-  if (currentFilter === 'INTRUSION') {
-    filtered = allEventsCache.filter(e => e.event_type === 'INTRUSION');
-  } else if (currentFilter === 'LOITERING') {
-    filtered = allEventsCache.filter(e => e.event_type === 'LOITERING');
-  } else if (currentFilter === 'WATCHLIST') {
-    filtered = allEventsCache.filter(e => e.event_type === 'WATCHLIST_MATCH');
-  } else if (currentFilter === 'NIGHT') {
-    filtered = allEventsCache.filter(e => e.event_type === 'NIGHT_MOVEMENT');
-  }
-
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="alert-empty">No ${currentFilter.toLowerCase()} alerts in recent activity.</div>`;
-    return;
-  }
-
-
-  list.innerHTML = filtered.map(e => {
-    const badge = getBadgeInfo(e.event_type);
-    const sevClass = (e.severity || 'LOW').toLowerCase();
-    const confPercent = Math.round((e.confidence || 0) * 100);
-    const timeDisplay = formatRelativeTime(e.timestamp);
-    const summaryText = e.summary || `${e.event_type} - ${e.object_type} #${e.object_id} at ${e.camera_name || e.camera_id}`;
-
-    return `<div class="alert-item ${sevClass}">
-      <div class="alert-header">
-        <span class="alert-badge ${badge.cls}">${badge.icon} ${badge.label}</span>
-        <span class="alert-time">${timeDisplay}</span>
-      </div>
-      <div class="alert-summary">${summaryText}</div>
-      <div class="alert-meta">
-        <span>📍 ${e.camera_name || e.camera_id}</span>
-        <span>🏷️ #${e.object_id}</span>
-        <span>🎯 ${confPercent}% conf</span>
-        <span class="sev-tag ${e.severity}">${e.severity}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function refreshEvents() {
+async function refreshIncidents() {
   try {
-    const res = await fetch('/api/events');
+    const res = await fetch('/api/incidents');
     if (!res.ok) return;
-    const events = await res.json();
-    if (Array.isArray(events)) {
-      if (lastSeenEventId === null) {
-        lastSeenEventId = events.length > 0 ? events[0].id : 0;
-      } else if (events.length > 0 && events[0].id > lastSeenEventId) {
-        const newOnes = events.filter(e => e.id > lastSeenEventId);
-        const worst = newOnes.some(e => e.severity === 'CRITICAL') ? 'CRITICAL' :
-                      (newOnes.some(e => e.severity === 'HIGH') ? 'HIGH' : null);
-        if (worst) triggerAlarm(worst);
-        lastSeenEventId = events[0].id;
-      }
-      allEventsCache = events;
-      renderEvents();
+    const incidents = await res.json();
+    
+    document.getElementById('stat-incidents').innerText = incidents.length;
+    
+    const list = document.getElementById('incidents-list');
+    if (incidents.length === 0) {
+      list.innerHTML = '<div class="alert-empty">All secure. No active incidents.</div>';
+      return;
     }
-  } catch (e) {
-    console.warn('events refresh failed', e);
-  }
+    
+    // Check for new highest incident
+    if (incidents.length > 0 && incidents[0].id > (lastSeenIncidentId || 0)) {
+       const newInc = incidents[0];
+       if (newInc.severity === 'CRITICAL' || newInc.severity === 'HIGH') {
+           triggerAlarm(newInc.severity, `INCIDENT: ${newInc.description}`);
+       }
+       lastSeenIncidentId = newInc.id;
+    }
+
+    list.innerHTML = incidents.map(inc => {
+      const sevClass = (inc.severity || 'LOW').toLowerCase();
+      const reasons = (inc.reasons || []).map(r => `<div>${r}</div>`).join('');
+      
+      return `<div class="incident-item ${sevClass}" onclick="openIncident('${inc.incident_id}')">
+        <div class="incident-header">
+          <span class="incident-id">${inc.incident_id}</span>
+          <span class="sev-tag ${inc.severity}">${inc.severity}</span>
+        </div>
+        <div class="incident-desc">${inc.description}</div>
+        <div class="incident-reasons">${reasons}</div>
+        <div class="incident-meta">
+          <span>Updates: ${(inc.timeline || []).length}</span>
+          <span>Since: ${formatRelativeTime(inc.created_at)}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch (e) { console.warn(e); }
+}
+
+async function openIncident(incId) {
+    currentIncidentId = incId;
+    const res = await fetch(`/api/incidents/${incId}`);
+    if(!res.ok) return;
+    const inc = await res.json();
+    
+    document.getElementById('modal-title').textContent = `Incident ${inc.incident_id}`;
+    document.getElementById('modal-desc').textContent = inc.description;
+    
+    document.getElementById('modal-reasons').innerHTML = (inc.reasons || []).map(r => `<div>${r}</div>`).join('');
+    
+    const tl = document.getElementById('modal-timeline');
+    tl.innerHTML = (inc.timeline || []).map(t => {
+        return `<div class="timeline-event">
+            <div class="timeline-time">${formatRelativeTime(t.time)} - ${t.camera_id}</div>
+            <div class="timeline-desc">${t.desc}</div>
+        </div>`;
+    }).join('');
+    
+    document.getElementById('incident-modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('incident-modal').classList.remove('active');
+    currentIncidentId = null;
+}
+
+async function resolveCurrentIncident() {
+    if(!currentIncidentId) return;
+    await fetch(`/api/incidents/${currentIncidentId}/close`, {method: 'POST'});
+    closeModal();
+    refreshIncidents();
 }
 
 async function refresh() {
   await Promise.allSettled([
     refreshStats(),
-    refreshEvents(),
-    refreshCameraStatus()
+    refreshIncidents(),
+    refreshSystemStatus()
   ]);
 }
 setInterval(refresh, 1500);
@@ -522,4 +599,3 @@ refresh();
 </style>
 </body>
 </html>
-

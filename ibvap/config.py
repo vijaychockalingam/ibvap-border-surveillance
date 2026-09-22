@@ -1,47 +1,72 @@
-# IBVAP config
-# Tuned for CPU-only inference (integrated graphics, 16GB RAM).
-# If the video feed feels laggy on your machine, raise FRAME_SKIP first,
-# then lower RESIZE_WIDTH. Defaults below are tuned for running several
-# cameras simultaneously (each camera runs its own full pipeline in
-# parallel, so CPU load scales with camera count) - if you're only running
-# 1-2 cameras you can safely lower FRAME_SKIP back toward 2.
-#
-# NOTE: if you change RESIZE_WIDTH, redraw every zone with select_zone.py
-# afterward - existing zone_cam*.json files were drawn at the current
-# RESIZE_WIDTH and will be misaligned at a different one.
+"""
+IBVAP Configuration
+Tuned for CPU-only multi-camera execution (16GB RAM).
+Supports logical multi-node AI processing and dynamic stream management.
+"""
 
-RESIZE_WIDTH = 640            # all frames are resized to this width before
-                               # detection AND before zone selection, so the
-                               # two stay in the same coordinate space
-FRAME_SKIP = 3                 # run detection every Nth frame (tracker fills
-                               # in the gaps), raise to 3-4 if it's laggy
-CONF_THRESHOLD = 0.4           # detection confidence threshold
-NIGHT_BRIGHTNESS_THRESHOLD = 60  # avg grayscale pixel value below this = night
-ALERT_COOLDOWN_SECONDS = 5     # don't re-alert on the same tracked object
-                                 # more often than this
-MODEL_PATH = "yolov8n.pt"      # nano model - required for CPU speed
+RESIZE_WIDTH = 640            # Frame width for uniform processing and coordinate space
+FRAME_SKIP = 3                 # Run AI detection every Nth frame (tracker fills in gaps)
+CONF_THRESHOLD = 0.4           # YOLO detection confidence threshold
+NIGHT_BRIGHTNESS_THRESHOLD = 60  # Average grayscale brightness below this triggers Night Mode
+ALERT_COOLDOWN_SECONDS = 5     # Minimum seconds between duplicate alerts for the same object
+MODEL_PATH = "yolo26n.pt"      # Local YOLO26 nano model path
 
-# ANPR (number plate reading)
-ENABLE_ANPR = True             # set False to disable plate reading entirely
-ANPR_MAX_ATTEMPTS = 8          # give up trying to read a given vehicle's
-                                 # plate after this many attempts (it may be
-                                 # too far away / angled / blurry)
+# ANPR (Automatic Number Plate Recognition)
+ENABLE_ANPR = True             # Enable/disable plate reading via EasyOCR
+ANPR_MAX_ATTEMPTS = 8          # Maximum OCR attempts per vehicle object
 
-# Face detection (bounding boxes only - NOT identity recognition/matching).
-# See README for why this prototype deliberately stops at detection.
+# Face detection (Haar cascade bounding boxes - detection only, not identity recognition)
 ENABLE_FACE_DETECTION = True
-FACE_MAX_ATTEMPTS = 5          # give up checking a given person for a
-                                 # visible face after this many attempts
+FACE_MAX_ATTEMPTS = 5          # Maximum face check attempts per person object
 
 WATCHLIST_PATH = "watchlist.json"
 
-# Suspicious activity (loitering) - a person continuously inside the zone
-# past this many seconds gets a separate LOITERING event on top of the
-# immediate INTRUSION alert. Kept short by default so it's demoable on
-# short test clips; a real deployment would likely use ~60s (the number the
-# original problem-statement planning used).
-LOITERING_SECONDS = 8
+# Suspicious activity (loitering in virtual restricted zone)
+LOITERING_SECONDS = 8          # Continuous seconds in restricted zone before LOITERING alert
 
-# How many times per second each camera's video_feed route checks the
-# background thread's buffer for a new frame to stream to the browser.
-STREAM_FPS = 12
+# Stream & Display settings
+STREAM_FPS = 15                # Target frames per second for browser display feeds
+AI_INFERENCE_FPS = 8           # Default AI inference cycle rate
+
+# Adaptive AI Processing Limits
+IDLE_FPS = 3
+ACTIVE_FPS = 8
+HIGH_ALERT_FPS = 12
+
+# Logical Processing Nodes Definition
+NODES_CONFIG = {
+    "node_1": {
+        "name": "AI Processing Node 1",
+        "description": "Logical worker managing Cameras 1-3",
+        "default_cameras": ["cam1", "cam2", "cam3"]
+    },
+    "node_2": {
+        "name": "AI Processing Node 2",
+        "description": "Logical worker managing Cameras 4-6",
+        "default_cameras": ["cam4", "cam5", "cam6"]
+    }
+}
+
+# Intelligence Layer Configurations
+
+# Camera Topology Graph (which cameras can entities physically move between)
+CAMERA_TOPOLOGY = {
+    "cam1": ["cam2"],
+    "cam2": ["cam1", "cam3", "cam4"],
+    "cam3": ["cam2", "cam6"],
+    "cam4": ["cam2", "cam5"],
+    "cam5": ["cam4", "cam6"],
+    "cam6": ["cam5", "cam3"]
+}
+
+# Zone Behavior Baselines (hours of the day when activity is EXPECTED)
+# e.g., "cam1": (6, 22) means normal activity is between 6 AM and 10 PM.
+# If activity happens outside these hours, it's flagged as unusual.
+ZONE_BASELINES = {
+    "cam1": (6, 22), 
+    "cam2": (8, 18),
+    "cam3": (0, 0),  # Restricted 24/7 (start == end means always restricted)
+    "cam4": (6, 22),
+    "cam5": (6, 22),
+    "cam6": (8, 18)
+}

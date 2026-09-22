@@ -8,6 +8,7 @@ ibvap.db
 ibvap.db-wal
 ibvap.db-shm
 snapshots/
+evidence_packages/
 *.log
 
 # PyTorch weights

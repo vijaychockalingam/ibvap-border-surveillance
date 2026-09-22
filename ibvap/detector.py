@@ -11,6 +11,13 @@ CLASSES_OF_INTEREST = {
     3: ("motorcycle", "vehicle"),
     5: ("bus", "vehicle"),
     7: ("truck", "vehicle"),
+    14: ("bird", "animal"),
+    15: ("cat", "animal"),
+    16: ("dog", "animal"),
+    17: ("horse", "animal"),
+    18: ("sheep", "animal"),
+    19: ("cow", "animal"),
+    21: ("bear", "animal"),
 }
 
 
